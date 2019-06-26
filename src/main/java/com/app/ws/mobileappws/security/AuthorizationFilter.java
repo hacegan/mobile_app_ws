@@ -16,46 +16,46 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import io.jsonwebtoken.Jwts;
 
 public class AuthorizationFilter extends BasicAuthenticationFilter {
-	public AuthorizationFilter(AuthenticationManager authManager) {
-		super(authManager);
-	}
+ public AuthorizationFilter(AuthenticationManager authManager) {
+  super(authManager);
+ }
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
-			throws IOException, ServletException {
+ @Override
+ protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+ throws IOException, ServletException {
 
-		String header = req.getHeader(SecurityConstants.HEADER_STRING);// authorization headerını alıyoruz
+  String header = req.getHeader(SecurityConstants.HEADER_STRING); // authorization headerını alıyoruz
 
-		if (header == null || !header.startsWith(SecurityConstants.TOKEN_PREFIX)) {// null mu veya prefiximizle
-																					// baslamıyorsa
-			chain.doFilter(req, res);
-			return;
-		}
+  if (header == null || !header.startsWith(SecurityConstants.TOKEN_PREFIX)) { // null mu veya prefiximizle
+   // baslamıyorsa
+   chain.doFilter(req, res);
+   return;
+  }
 
-		UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		chain.doFilter(req, res);
-	}
+  UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
+  SecurityContextHolder.getContext().setAuthentication(authentication);
+  chain.doFilter(req, res);
+ }
 
-	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-		String token = request.getHeader(SecurityConstants.HEADER_STRING);
+ private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
+  String token = request.getHeader(SecurityConstants.HEADER_STRING);
 
-		if (token != null) {
+  if (token != null) {
 
-			token = token.replace(SecurityConstants.TOKEN_PREFIX, "");// prefix isimize yaramayacağı için onu siliyoruz
+   token = token.replace(SecurityConstants.TOKEN_PREFIX, ""); // prefix isimize yaramayacağı için onu siliyoruz
 
-			String user = Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret())// belirlediğimiz secret ile işlem
-																						// yapmalıyız
-					.parseClaimsJws(token).getBody().getSubject();
+   String user = Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()) // belirlediğimiz secret ile işlem
+    // yapmalıyız
+    .parseClaimsJws(token).getBody().getSubject();
 
-			if (user != null) {
-				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());// tokeni olusturuyoruz.
-			}
+   if (user != null) {
+    return new UsernamePasswordAuthenticationToken(user, null, new ArrayList < > ()); // tokeni olusturuyoruz.
+   }
 
-			return null;
-		}
+   return null;
+  }
 
-		return null;
-	}
+  return null;
+ }
 
 }
