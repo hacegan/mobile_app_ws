@@ -28,129 +28,129 @@ import com.app.ws.mobileappws.ui.model.response.UserRest;
 @Service
 public class UserServiceImpl implements UserService {
 
-	@Autowired
-	UserRepository userRepository;
+ @Autowired
+ UserRepository userRepository;
 
-	@Autowired
-	Utils utils;
+ @Autowired
+ Utils utils;
 
-	@Autowired
-	BCryptPasswordEncoder bCryptPasswordEncoder;
+ @Autowired
+ BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	@Override
-	public UserDto createUser(UserDto user) {
-		// TODO Auto-generated method stub
+ @Override
+ public UserDto createUser(UserDto user) {
+  // TODO Auto-generated method stub
 
-		if (userRepository.findByEmail(user.getEmail()) != null)// mail unique kabul edip kayıt var mı yok mu kontrol
-			throw new RuntimeException("Record already exists");
+  if (userRepository.findByEmail(user.getEmail()) != null) // mail unique kabul edip kayıt var mı yok mu kontrol
+   throw new RuntimeException("Record already exists");
 
-		for (int i = 0; i < user.getAddresses().size(); i++) {// Her adres icin ayrı bir id üretiyoruz.
-			AddressDTO address = user.getAddresses().get(i);
-			address.setUserDetails(user);
-			address.setAddressId(utils.generateAddressId(30));
-			user.getAddresses().set(i, address);
-		}
+  for (int i = 0; i < user.getAddresses().size(); i++) { // Her adres icin ayrı bir id üretiyoruz.
+   AddressDTO address = user.getAddresses().get(i);
+   address.setUserDetails(user);
+   address.setAddressId(utils.generateAddressId(30));
+   user.getAddresses().set(i, address);
+  }
 
-		ModelMapper modelMapper = new ModelMapper();
-		UserEntity userEntity = modelMapper.map(user, UserEntity.class);
-		// BeanUtils.copyProperties(user, userEntity);
+  ModelMapper modelMapper = new ModelMapper();
+  UserEntity userEntity = modelMapper.map(user, UserEntity.class);
+  // BeanUtils.copyProperties(user, userEntity);
 
-		userEntity.setUserId(utils.generateUserId(30));// 30 karakterlik üret
-		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));// kullanıcının girdiği
-																							// sifreyi şifrele
+  userEntity.setUserId(utils.generateUserId(30)); // 30 karakterlik üret
+  userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword())); // kullanıcının girdiği
+  // sifreyi şifrele
 
-		UserEntity storedUserDetails = userRepository.save(userEntity);
+  UserEntity storedUserDetails = userRepository.save(userEntity);
 
-		UserDto returnValue = modelMapper.map(storedUserDetails, UserDto.class);
-		// BeanUtils.copyProperties(storedUserDetails, returnValue);
+  UserDto returnValue = modelMapper.map(storedUserDetails, UserDto.class);
+  // BeanUtils.copyProperties(storedUserDetails, returnValue);
 
-		return returnValue;
-	}
+  return returnValue;
+ }
 
-	@Override
-	public UserDto updateUser(String userId, UserDto user) {
-		UserDto returnValue = new UserDto();
-		UserEntity userEntity = userRepository.findByUserId(userId);
+ @Override
+ public UserDto updateUser(String userId, UserDto user) {
+  UserDto returnValue = new UserDto();
+  UserEntity userEntity = userRepository.findByUserId(userId);
 
-		if (userEntity == null) {
-			throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
-		}
+  if (userEntity == null) {
+   throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+  }
 
-		userEntity.setFirstName(user.getFirstName());
-		userEntity.setLastName(user.getLastName());
+  userEntity.setFirstName(user.getFirstName());
+  userEntity.setLastName(user.getLastName());
 
-		UserEntity updatedUserEntity = userRepository.save(userEntity);
+  UserEntity updatedUserEntity = userRepository.save(userEntity);
 
-		BeanUtils.copyProperties(updatedUserEntity, returnValue);
+  BeanUtils.copyProperties(updatedUserEntity, returnValue);
 
-		return returnValue;
-	}
+  return returnValue;
+ }
 
-	@Override
-	public void deleteUser(String userId) {
-		UserEntity userEntity = userRepository.findByUserId(userId);
-		if (userEntity == null) {
-			throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
-		}
-		userRepository.delete(userEntity);
-	}
+ @Override
+ public void deleteUser(String userId) {
+  UserEntity userEntity = userRepository.findByUserId(userId);
+  if (userEntity == null) {
+   throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+  }
+  userRepository.delete(userEntity);
+ }
 
-	@Override
-	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {// kullanıcı adı aslında email
-																							// adresi
-		// TODO Auto-generated method stub
-		UserEntity userEntity = userRepository.findByEmail(email);
+ @Override
+ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException { // kullanıcı adı aslında email
+  // adresi
+  // TODO Auto-generated method stub
+  UserEntity userEntity = userRepository.findByEmail(email);
 
-		if (userEntity == null) {// email kaydı var mı yok mu kontrol
-			throw new UsernameNotFoundException(email);
-		}
+  if (userEntity == null) { // email kaydı var mı yok mu kontrol
+   throw new UsernameNotFoundException(email);
+  }
 
-		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
-	}
+  return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList < > ());
+ }
 
-	@Override
-	public UserDto getUser(String email) {
-		// TODO Auto-generated method stub
-		UserEntity userEntity = userRepository.findByEmail(email);
+ @Override
+ public UserDto getUser(String email) {
+  // TODO Auto-generated method stub
+  UserEntity userEntity = userRepository.findByEmail(email);
 
-		if (userEntity == null) {// email kaydı var mı yok mu kontrol
-			throw new UsernameNotFoundException(email);
-		}
+  if (userEntity == null) { // email kaydı var mı yok mu kontrol
+   throw new UsernameNotFoundException(email);
+  }
 
-		UserDto returnValue = new UserDto();
-		BeanUtils.copyProperties(userEntity, returnValue);
-		return returnValue;
-	}
+  UserDto returnValue = new UserDto();
+  BeanUtils.copyProperties(userEntity, returnValue);
+  return returnValue;
+ }
 
-	@Override
-	public UserDto getUserByUserId(String userId) {
-		UserDto returnValue = new UserDto();
-		UserEntity userEntity = userRepository.findByUserId(userId);
-		if (userEntity == null) {// userid kontrol
-			throw new UsernameNotFoundException("User with ID : " + userId + " Not Found");
-		}
+ @Override
+ public UserDto getUserByUserId(String userId) {
+  UserDto returnValue = new UserDto();
+  UserEntity userEntity = userRepository.findByUserId(userId);
+  if (userEntity == null) { // userid kontrol
+   throw new UsernameNotFoundException("User with ID : " + userId + " Not Found");
+  }
 
-		BeanUtils.copyProperties(userEntity, returnValue);
+  BeanUtils.copyProperties(userEntity, returnValue);
 
-		return returnValue;
-	}
+  return returnValue;
+ }
 
-	@Override
-	public List<UserDto> getUsers(int page, int limit) {
-		List<UserDto> returnValue = new ArrayList<UserDto>();
+ @Override
+ public List < UserDto > getUsers(int page, int limit) {
+  List < UserDto > returnValue = new ArrayList < UserDto > ();
 
-		Pageable pageable = PageRequest.of(page, limit);
+  Pageable pageable = PageRequest.of(page, limit);
 
-		Page<UserEntity> usersPage = userRepository.findAll(pageable);
-		List<UserEntity> users = usersPage.getContent();
+  Page < UserEntity > usersPage = userRepository.findAll(pageable);
+  List < UserEntity > users = usersPage.getContent();
 
-		for (UserEntity user : users) {
-			UserDto userDto = new UserDto();
-			BeanUtils.copyProperties(user, userDto);
-			returnValue.add(userDto);
-		}
+  for (UserEntity user: users) {
+   UserDto userDto = new UserDto();
+   BeanUtils.copyProperties(user, userDto);
+   returnValue.add(userDto);
+  }
 
-		return returnValue;
-	}
+  return returnValue;
+ }
 
 }
