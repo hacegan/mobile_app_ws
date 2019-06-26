@@ -27,62 +27,62 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-	private final AuthenticationManager authenticationManager;
+ private final AuthenticationManager authenticationManager;
 
-	public AuthenticationFilter(AuthenticationManager authenticationManager) {
-		this.authenticationManager = authenticationManager;
-	}
+ public AuthenticationFilter(AuthenticationManager authenticationManager) {
+  this.authenticationManager = authenticationManager;
+ }
 
-	@Override
-	public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
-			throws AuthenticationException {
-		try {
+ @Override
+ public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
+ throws AuthenticationException {
+  try {
 
-			UserLoginRequestModel creds = new ObjectMapper().readValue(req.getInputStream(),
-					UserLoginRequestModel.class);
+   UserLoginRequestModel creds = new ObjectMapper().readValue(req.getInputStream(),
+    UserLoginRequestModel.class);
 
-			return authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(creds.getEmail(), creds.getPassword(), new ArrayList<>()));
+   return authenticationManager.authenticate(
+    new UsernamePasswordAuthenticationToken(creds.getEmail(), creds.getPassword(), new ArrayList < > ()));
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  } catch (IOException e) {
+   throw new RuntimeException(e);
+  }
+ }
 
-	@Override
-	protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
-			Authentication auth) throws IOException, ServletException {// giriş başarılıysa
+ @Override
+ protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
+  Authentication auth) throws IOException, ServletException { // giriş başarılıysa
 
-		String userName = ((User) auth.getPrincipal()).getUsername();
+  String userName = ((User) auth.getPrincipal()).getUsername();
 
-		String token = Jwts.builder().setSubject(userName)
-				.setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-				.signWith(SignatureAlgorithm.HS512, SecurityConstants.getTokenSecret()).compact();
+  String token = Jwts.builder().setSubject(userName)
+   .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+   .signWith(SignatureAlgorithm.HS512, SecurityConstants.getTokenSecret()).compact();
 
-		UserService userService = (UserService) SpringApplicationContext.getBean("userServiceImpl");// auth filterı
-																									// @bean diyip
-																									// kullanamıyacağımız
-																									// icin impl
-																									// yapılacak yerde
-																									// impl yapılacak
-																									// olan
-																									// classı
-																									// appcontextden
-																									// getiriyoruz.
+  UserService userService = (UserService) SpringApplicationContext.getBean("userServiceImpl"); // auth filterı
+  // @bean diyip
+  // kullanamıyacağımız
+  // icin impl
+  // yapılacak yerde
+  // impl yapılacak
+  // olan
+  // classı
+  // appcontextden
+  // getiriyoruz.
 
-		UserDto userDto = userService.getUser(userName);
+  UserDto userDto = userService.getUser(userName);
 
-		res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
+  res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
 
-		res.addHeader("UserId", userDto.getUserId());// userid üzerinden işlem yapıcagımız icin headera ekliyoruz.
-	}
+  res.addHeader("UserId", userDto.getUserId()); // userid üzerinden işlem yapıcagımız icin headera ekliyoruz.
+ }
 
-	@Override
-	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException failed) {// giriş başarısızsa bunu override etmessek status code 403 forbiden
-												// dönücek.
-		final Logger LOGGER = Logger.getLogger(AuthenticationFilter.class.getName());
-		LOGGER.severe("giris basarisiz");
-	}
+ @Override
+ protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+  AuthenticationException failed) { // giriş başarısızsa bunu override etmessek status code 403 forbiden
+  // dönücek.
+  final Logger LOGGER = Logger.getLogger(AuthenticationFilter.class.getName());
+  LOGGER.severe("giris basarisiz");
+ }
 
 }
