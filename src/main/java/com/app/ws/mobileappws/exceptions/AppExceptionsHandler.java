@@ -12,30 +12,34 @@ import org.springframework.web.context.request.WebRequest;
 import com.app.ws.mobileappws.ui.model.response.ErrorMessage;
 
 @ControllerAdvice // tüm projede exception handle etmek veya initbinder kullanmak istediğimizde bu
-					// annotu kullanıyoruz.
+// annotu kullanıyoruz.
 public class AppExceptionsHandler {
 
-	@ExceptionHandler(value = { UserServiceException.class }) // Exception fırlatacagı zaman buraya geliyor burada
-																// handle ediliyor.
-	public ResponseEntity<Object> handleUserServiceException(UserServiceException ex, WebRequest request) {
+ @ExceptionHandler(value = {
+  UserServiceException.class
+ }) // Exception fırlatacagı zaman buraya geliyor burada
+ // handle ediliyor.
+ public ResponseEntity < Object > handleUserServiceException(UserServiceException ex, WebRequest request) {
 
-		ErrorMessage errorMessage = new ErrorMessage(new Date(), ex.getMessage());
+  ErrorMessage errorMessage = new ErrorMessage(new Date(), ex.getMessage());
 
-		return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);// ex.getmessage
-																										// dersek
-																										// sadece
-																										// string ex
-																										// dersek
-																										// tüm objei
-																										// döndürecek
-	}
+  return new ResponseEntity < > (errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR); // ex.getmessage
+  // dersek
+  // sadece
+  // string ex
+  // dersek
+  // tüm objei
+  // döndürecek
+ }
 
-	@ExceptionHandler(value = { Exception.class })//Diğer tüm exceptionlar buraya geliyor.
-	public ResponseEntity<Object> handleOtherExceptions(Exception ex, WebRequest request) {
+ @ExceptionHandler(value = {
+  Exception.class
+ }) //Diğer tüm exceptionlar buraya geliyor.
+ public ResponseEntity < Object > handleOtherExceptions(Exception ex, WebRequest request) {
 
-		ErrorMessage errorMessage = new ErrorMessage(new Date(), ex.getMessage());
+  ErrorMessage errorMessage = new ErrorMessage(new Date(), ex.getMessage());
 
-		return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-	}
+  return new ResponseEntity < > (errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+ }
 
 }
